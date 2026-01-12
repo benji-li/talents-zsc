@@ -1,0 +1,230 @@
+ACTION_SPACE_VALUE: 27
+OBS_SPACE_CHANNEL: 12
+N_AGENTS: 2
+N_CLUSTERS: 4
+MODEL_CONFIG:
+  custom_model: IPPO_model
+  custom_model_config:
+    model_type: custom_conv
+    input_conv_channels: 12
+    actor_output_size: 27
+    critic_share_layers: false
+    conv_filters:
+      - - 16
+        - 3
+        - 1
+        - same
+        - default
+      - - pool
+        - 2
+        - 2
+        - valid
+        - null
+      - - 32
+        - 2
+        - 1
+        - valid
+        - default
+      - - 64
+        - 2
+        - 1
+        - valid
+        - default
+    actor_layer_sizes:
+      - - 200
+        - 64
+      - - 64
+        - 27
+    critic_layer_sizes:
+      - - 200
+        - 64
+      - - 64
+        - 1
+    action_masking: true
+ENV_CONFIG:
+  restrict_capability: false
+  max_steps: 1200
+  n_agents: 2
+  action_level: high
+  layout: open
+  reward_shaping_factor: 0
+  annealing_reward_shaping: true
+  reward_shaping_horizon: 25000000
+  use_phi: false
+  obs_encoder: lossless
+  cluster_br: true
+  num_clusters: 4
+  observation_space:
+    type: Dict
+    spaces:
+      image:
+        type: Box
+        low: -65535
+        high: 65535
+        shape:
+          - 7
+          - 10
+          - 12
+        dtype: int32
+      action_mask:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - 27
+        dtype: float32
+      action_stats:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - 27
+        dtype: float32
+      order_list:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - 8
+        dtype: int8
+      cluster_id:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - 4
+        dtype: float32
+      prev_action:
+        type: Box
+        low: 0
+        high: 8
+        shape:
+          - 27
+        dtype: float32
+  action_space:
+    type: Discrete
+    n: 27
+  rew_shaping_params:
+    place_tortilla_on_plate:
+      - 0
+      - 0
+    pickup_dish_from_sink:
+      - 1
+      - 1
+    pickup_chopped_ingredient_from_chopboard:
+      - 0
+      - 0
+    place_ingredient_on_grill:
+      - 1
+      - 1
+    pickup_cooked_ingredient_from_grill:
+      - 1
+      - 1
+    place_ingredient_on_pot:
+      - 1
+      - 1
+    pickup_cooked_ingredient_from_pot:
+      - 1
+      - 1
+    chop_ingredient:
+      - 1
+      - 1
+    pickup_mushroom:
+      - 0
+      - 0
+    pickup_meat:
+      - 0
+      - 0
+    pickup_rice:
+      - 0
+      - 0
+    pickup_tortilla:
+      - 0
+      - 0
+    extinguish_fire:
+      - 0
+      - 0
+    place_charcoal_on_trash:
+      - 0
+      - 0
+    burn_ingredient: -0.01
+    wash_dish:
+      - 1
+      - 1
+    food_assembly:
+      - 1
+      - 1
+    serve_dish:
+      - 5
+      - 5
+    wrong_dish_discount: 1
+    correct_dish_bonus: 1
+    random_dish_delivery: 0
+    multiplier_params:
+      - - 1
+        - 1
+      - - 4
+        - 2
+      - - 100
+        - 5
+BASE_CONFIG:
+  env: burrito
+  alg: CLUSTERBR
+  framework: torch
+  num_workers: 0
+  num_envs_per_worker: 1
+  eval_episodes: 1
+  count_steps_by: env_steps
+  n_clusters: 4
+  sgd_minibatch_size: 768
+  num_sgd_iter: 4
+  train_batch_size: 38400
+  lr_schedule:
+    - - 0
+      - 0.001
+    - - 8000000
+      - 0.001
+    - - 16000000
+      - 0.0001
+  lambda: 0.999
+  kl_coeff: 0.5
+  clip_rewards: false
+  clip_param: 0.2
+  vf_clip_param: 10
+  vf_loss_coeff: 0.5
+  entropy_coeff: 0.01
+  gamma: 0.999
+  rollout_fragment_length: auto
+  batch_mode: truncate_episodes
+  num_cpus_per_worker: 1
+  num_cpus_for_driver: 1
+  num_gpus: 3
+  num_gpus_per_worker: 0
+  use_gae: true
+  vae_path: /data/benji/strategy-adaptation/agent_characterization/open_bp/20250627_175003_ep_100/
+  latent_dim: 8
+  window_length: 50
+  vae_horizon: 50
+  action_dim: 27
+  obs_shape:
+    - 7
+    - 10
+    - 12
+  learning_rate: 0.2
+  alpha: 0.4
+  decay_factor: 1
+  gaussians_path: /data/benji/strategy-adaptation/agent_characterization/open_bp/20250627_175003_ep_100/kmeans/gaussians.pkl
+  pretrained_model_path_BR: /data/benji/strategy-adaptation/overcooked/src/burrito_rl/policy_params/vaebr_gpuoptim_open_bp_norw_4cl_newenc-3/0000/checkpoint_001560/policies/polBR/policy_state.pkl
+  pretrained_model_path_eval: /data/shuyang/overcooked/src/burrito_rl/policy_params/open_mep_population/pol17/policy_state.pkl
+  eval_cluster_id: 0
+  br_model_name: ActionBiasedClusterConditionedActorCritic
+  br_actor_layer_sizes:
+    - - 200
+      - 64
+    - - 64
+      - 27
+  br_critic_layer_sizes:
+    - - 200
+      - 64
+    - - 64
+      - 1

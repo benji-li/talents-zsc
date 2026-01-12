@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<meta charset="UTF-8" />
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overcooked Web App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='css/styles.css') }}"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div class="main">
+      <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+      <script>
+        // Optimize resource loading by caching
+        const resourceCache = {};
+
+        async function loadResources(resource) {
+          if (resourceCache[resource]) {
+            return resourceCache[resource];
+          }
+          try {
+            const url = "{{ url_for('fetch_sprite_sheets') }}";
+            const objectRequest = await fetch(url);
+            const objectData = await objectRequest.json();
+            resourceCache[resource] = objectData;
+            return objectData;
+          } catch (error) {
+            console.error("Error loading resources:", error);
+          }
+        }
+
+        window.objectSpritesUrl = "{{ url_for('static', filename='object_sprites.png') }}";
+        window.chefSpritesUrl = "{{ url_for('static', filename='all_chef_sprites.png') }}";
+        window.image_cache = {}
+
+        function getLocation(sprites, sprite_name) {
+          if (window.image_cache[sprite_name]) {
+            return window.image_cache[sprite_name];
+          }
+          const frameData = sprites.frames.find(
+            (frame) => frame.filename === sprite_name
+          );
+          sprite = frameData ? { x: frameData.frame.x, y: frameData.frame.y } : null;
+          window.image_cache[sprite_name] = sprite
+          return sprite
+        }
+
+        loadResources().then((resources) => {
+          window.globalObjectData = resources.object_sprites;
+          window.globalChefData = resources.all_chef_sprites;
+        });
+
+        function copyGameId() {
+          const gameIdElement = document.getElementById("game-id");
+          const gameId = gameIdElement.innerText;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard
+              .writeText(gameId)
+              .then(() => {})
+              .catch((err) => {
+                console.error("Failed to copy Game ID: ", err);
+              });
+          } else {
+            // Fallback method for older browsers
+            const textArea = document.createElement("textarea");
+            textArea.value = gameId;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+              document.execCommand("copy");
+            } catch (err) {
+              console.error("Failed to copy Game ID: ", err);
+            }
+            document.body.removeChild(textArea);
+          }
+        }
+      </script>
+      <div id="title">Initializing Game... 👾</div>
+      <div class="player-container">
+        <div id="player-color">playing as:</div>
+        <div id="player-color-img"></div>
+      </div>
+      <div class="copy-text-container">
+        <label for="game-id-button" class="copy-code-label">Room Code: </label>
+        <button
+          id="game-id-button"
+          class="copy-text-btn"
+          onclick="copyGameId()"
+        >
+          {{ game_id }}
+        </button>
+      </div>
+      <div id="game-id" style="display: none">{{ game_id }}</div>
+      <div class="game-container">
+        <canvas id="gameCanvas" width="768" height="640"></canvas>
+        <canvas id="hudCanvas" width="240" height="640"></canvas>
+        <div class="container">
+         
+          <script>
+            const canvas = document.getElementById("gameCanvas");
+            const ctx = canvas.getContext("2d");
+            const hudCanvas = document.getElementById("hudCanvas");
+            const ctxHud = hudCanvas.getContext("2d"); // Corrected context assignment
+            const objectSprites = new Image();
+            const chefSprites = new Image();
+            const allSprites = new Image();
+            objectSprites.src = window.objectSpritesUrl;
+            chefSprites.src = window.chefSpritesUrl;
+            allSprites.src = window.allSpritesUrl;
+
+            const cellSize = 64; // Each image is 64x64px
+            const cols = 10 //Math.floor(canvas.width / cellSize); // Number of columns
+            const rows = 7 //Math.floor(canvas.height / cellSize); // Number of rows
+           
+            // Key press handling
+            document.addEventListener("keydown", function (event) {
+              const game_id = document.getElementById("game-id").innerText;
+              let key;
+              switch (event.code) {
+                case "ArrowUp":
+                  key = "up";
+                  break;
+                case "ArrowDown":
+                  key = "down";
+                  break;
+                case "ArrowLeft":
+                  key = "left";
+                  break;
+                case "ArrowRight":
+                  key = "right";
+                  break;
+                case "Space":
+                  key = "space";
+                  break;
+                default:
+                  return; // Ignore other keys
+              }
+              socket.emit("key_press", { game_id: game_id, key: key });
+            });
+  
+            // Define a variable to hold the interval ID
+            let pollingInterval;
+  
+            function getCookie(name) {
+              const value = `; ${document.cookie}`;
+              const parts = value.split(`; ${name}=`);
+              if (parts.length === 2) return parts.pop().split(";").shift();
+            }
+  
+            const client_id = getCookie("client_id");
+            const game_id = document.getElementById("game-id").innerText;
+            // startPolling(game_id);
+  
+            const socket = io(window.location.origin);
+            socket.emit("join_room", { game_id: game_id, client_id: client_id });
+
+            socket.on("all_joined", (data) => {
+              if (!document.getElementById("startButton")) {
+              const startButton = document.createElement("button");
+              startButton.id = "startButton";
+              startButton.innerText = "Ready to Play! (Press Enter)";
+              startButton.className = "cool-button";
+              startButton.style.position= "absolute";
+              startButton.style.top = "50%";
+              startButton.fontSize = "3rem";
+              startButton.onclick = () => {
+                socket.emit("start_game", { game_id: game_id, client_id: client_id });
+                startButton.remove(); // Remove the button once it has been triggered
+              };
+              document.querySelector(".main").appendChild(startButton);
+              document.addEventListener("keydown", function (event) {
+                if (event.code === "Enter") {
+                startButton.click();
+                startButton.remove(); // Remove the button once it has been triggered
+                }
+              });
+              }
+            });
+
+            socket.on("ready_count", (data) => {
+              const element = document.getElementById("title");
+              element.innerText = data.message;
+              element.style.color = "#FFD700";
+              element.style.fontSize = "2.5em";
+            })
+  
+            // Listen for updates from the server
+            socket.on("update_tiles", (data) => {
+              const decompressedData = pako.inflate(data, { to: 'string' });
+              // Parse the decompressed data (assuming it's JSON)
+              const {images, text} = JSON.parse(decompressedData);
+
+              // Clear the canvas before each update
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              Object.keys(images).forEach((key) => {
+                let tile = images[key];
+                tileName = tile[0];
+                isObject = tile[1] === 0
+                const spriteSheet = isObject ? objectSprites : chefSprites;
+                //const spriteSheet = allSprites
+                let sourceX, sourceY;
+            
+                // Calculate the grid position
+                const row = Math.floor(key / cols);
+                const x = key % cols * cellSize;
+                const y = row * cellSize;
+                
+                if (isObject) {
+                  const location = window.getLocation(window.globalObjectData, tileName);
+                  sourceX = location.x;
+                  sourceY = location.y;
+                } else {
+                  const location = window.getLocation(window.globalChefData, tileName);
+                  sourceX = location.x;
+                  sourceY = location.y;
+                }
+                ctx.drawImage(
+                    spriteSheet,         // Source image (sprite sheet)
+                    sourceX,             // Source X on sprite sheet
+                    sourceY,             // Source Y on sprite sheet
+                    cellSize,         // Source width (single frame)
+                    cellSize,        // Source height (single frame)
+                    x,                   // Destination X on canvas
+                    y,                   // Destination Y on canvas
+                    cellSize,            // Destination width
+                    cellSize             // Destination height
+                  );
+                });
+                if (text) {
+                Object.keys(text).forEach((key) => {
+                  const { cooking, burning, plates } = text[key];
+                  const col = key % cols;
+                  const row = Math.floor(key / cols);
+                  const x = col * cellSize + cellSize / 4;
+                  const y = row * cellSize + cellSize;
+                  ctx.font = "16pt Bubblegum Sans, sans-serif";
+                  ctx.fillStyle = cooking ? "green" : burning ? "red" : "black";
+                  ctx.fillRect(x - cellSize / 4, y - cellSize / 4, cellSize, cellSize / 4);
+                  ctx.fillStyle = "white";
+                  const originalValue = cooking || burning || plates;
+                  let value = Math.floor(cooking || burning || plates);
+                  if (cooking && originalValue == 0) {
+                    value = "ready!"
+                  }
+                  if (burning && originalValue == 0) {
+                    value = "burnt!"
+                  }
+                  ctx.fillText(value, x, y);
+                });
+                }
+            });
+  
+            socket.on("added_player", (data) => {
+              console.log("Added player:", data);
+              const playerColor = data.message;
+              if(data.client !== client_id) {
+                return;
+              }
+              const playerColorElement =
+                document.getElementById("player-color-img");
+              playerColorElement.style.backgroundImage = `url(${playerColor})`;
+              playerColorElement.style.display = "block";
+            });
+
+            socket.on("countdown", (data) => {
+              const element = document.getElementById("title");
+              element.innerText = data.message;
+              element.style.color = "#FFD700";
+              element.style.fontSize = "2.5em";
+                if (document.getElementById("startButton")) {
+                document.getElementById("startButton").remove();
+                }
+            });
+  
+            socket.on("update_title", (data) => {
+              // Update the title based on the message
+              const element = document.getElementById("title");
+              if (
+                data.message.toLowerCase() === element.innerText.toLowerCase()
+              ) {
+                return;
+              }
+              const message = data.message;
+              if (data.message.startsWith("Game Complete!-")) {
+                const parts = data.message.split("-");
+                const newGameId = parts[1];
+                element.innerText = `Game Complete! Loading new game...`;
+                element.style.color = "#4CAF50";
+                element.style.fontSize = "2.5em";
+                const timeout =
+                  10000 + Math.floor(Math.random() * (5000 - 1000 + 1)) + 1000;
+                setTimeout(() => {
+                  window.location.href = `/game/${newGameId}`;
+                }, timeout);
+              } else {
+                element.innerText = message;
+              }
+            });
+  
+            socket.on("update_hud", (data) => {
+              // Update the HUD data
+              const decompressedData = pako.inflate(new Uint8Array(data), { to: "string" });
+              // Parse the decompressed data (assuming it's JSON)
+              const { orders, score, time_left } = JSON.parse(decompressedData).hud;
+
+              ctxHud.clearRect(0, 0, hudCanvas.width, hudCanvas.height);
+              // Draw orders
+              orders.forEach((order, index) => {
+                let color = "#F44336" //red
+                if (order[1] >= order[2] * 0.66) {
+                  color = "#4CAF50" //green
+                } else if (order[1] >= order[2] * 0.33) {
+                  color = "#FFDD57" //yellow
+                }
+
+                const spacing = 24; // Space between rectangles
+                const topMargin = 16; // Space from top
+
+                const x = 1 * cellSize;
+                const y = index * (cellSize + spacing) + topMargin + 8; 
+
+                const location = window.getLocation(window.globalObjectData, `${order[0]}.png`); // Corrected tileName to order[0]
+                ctxHud.fillStyle = color;
+                ctxHud.fillRect(0, y, hudCanvas.width - 8, cellSize);
+
+                ctxHud.drawImage(
+                  objectSprites, // Corrected spriteSheet to objectSprites
+                  location.x, // Source X on sprite sheet
+                  location.y, // Source Y on sprite sheet
+                  cellSize, // Source width (single frame)
+                  cellSize, // Source height (single frame)
+                  0, // Destination X on canvas start leftmost possible
+                  y, // Destination Y on canvas
+                  cellSize, // Destination width
+                  cellSize // Destination height
+                );
+                             
+                const orderText = order[0].replace(/_/g, " ").trim();
+                const timerText = `(${Math.floor(order[1] / 10)})`;
+                ctxHud.font = "16pt Bubblegum Sans, sans-serif";
+                ctxHud.fillStyle = "white";
+                ctxHud.fillText("Orders:", 0, topMargin);
+                ctxHud.fillStyle = "black";
+                ctxHud.fillText(orderText, x+8, y+16);
+                ctxHud.fillText(timerText, x+24, y+48);
+              });
+  
+              // Draw score
+              ctxHud.font = "16pt Bubblegum Sans, sans-serif";
+              ctxHud.fillStyle = "white";
+              ctxHud.fillText("Score: " + score, 0, hudCanvas.height - 40);
+              ctxHud.fillText("Time Left: " + Math.floor(time_left/10), 0, hudCanvas.height - 10);
+            });
+  
+            socket.on("join_rejected", (data) => {
+              console.error("Join rejected:", data.message);
+              // Redirect to the home page
+              window.location.href = "/";
+            });
+  
+            socket.on("join_accepted", (data) => {
+              console.log("Join accepted:", data.message);
+            });
+          </script>
+        </div>
+      </div>
+     
+    </div>
+    <script src="{{ url_for('static', filename='js/toggle.js') }}"></script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+_target_: src.agents.HierarchicalAgent
+
+model: "MLP" # MLP or Conv
+hidden_size: [32] # of policy network can be a list or an int
+counter_locations: [[5, 3], [6, 5]] # Specified in env config since these goals are needed in MP creation
+
+stochastic: false
+max_depth: 50
+replan_on_stuck: true # if true, will choose a new high-level goal each time it's stuck (with another agent)
+
+defaults:
+  - _self_

@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "burrito"
+version = "0.1.0"
+description = "burrito environment"
+
+[tool.setuptools.packages.find]
+where = [".","overcooked/src"]

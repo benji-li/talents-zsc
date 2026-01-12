@@ -1,0 +1,438 @@
+:root {
+    --background-color: #1E1E1E; /* Dark mode background */
+}
+
+body {
+    margin: 0;
+    height:100%;
+    background-color: var(--background-color)
+}
+.main {
+    height: 100%;
+    display: flex;
+    color: var(--text-color);
+    flex-direction: column;
+    background-color: var(--background-color);
+    font-family: "Bubblegum Sans", sans-serif; /* Apply the Bubblegum Sans font to the entire body */
+    font-weight: 400;
+    font-style: normal;
+    align-items: center; /* Center content horizontally */
+    justify-content: flex-start; /* Align content to the top */
+    position: relative; /* Ensure the pseudo-element is positioned relative to the body */
+}
+
+/* Dark mode styles */
+body.dark {
+    --border-color: #009688; /* Light border color */
+    --background-color: #1E1E1E; /* Dark mode background */
+    --text-color: #E0E0E0; /* Dark mode text */
+    --color: #E0E0E0; /* Dark mode color */
+    --input-background: #2C2C2C; /* Dark mode input background */
+    --accent-color: #FF6F40; /* Dark mode accent color */
+}
+
+body.light {
+    --background-color: #f1ebcb; /* Light mode background */
+    --text-color: #333; /* Light mode text */
+    --input-background: #fff; /* Light input background */
+    --border-color: #009688; /* Light border color */
+    --accent-color: #FF7F50; /* Light accent color */
+}
+
+.join-game { 
+    display: flex;
+    align-items: center;
+}
+.join-label {
+    font-size: 1.2em;              /* Larger font size for visibility */
+    color: #FF7F50;                /* Coral color for the label */
+    margin-bottom: 10px;           /* Space below the label */
+    display: block;    
+    margin-right: 10px;            /* Block display for proper spacing */
+}
+
+.join-input {
+    width: calc(100% - 20px);      /* Full width minus padding */
+    padding: 10px;                 /* Padding for comfort */
+    border: 2px solid #009688;     /* Teal border */
+    border-radius: 5px;            /* Rounded corners */
+    font-size: 1em;                /* Base font size */
+    transition: border-color 0.3s; /* Smooth transition for focus */
+    height: 30px; 
+    margin-right: 10px;
+}
+
+.join-input:focus {
+    border-color: #009688;         /* Change border color on focus */
+    outline: none;                 /* Remove default outline */
+}
+
+.content {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center content horizontally */
+    margin-top: 20%; /* Adjust this value to position content below the background image */
+}
+
+.footer {
+    display: flex;
+    gap: 3em;
+    max-width: 600px; /* Set the same max width for the footer */
+    margin: 0 auto; /* Center the footer */
+    padding: 20px; /* Add padding if desired */
+}
+
+.footer button {       
+    padding: 15px 32px;        
+    text-align: center;        
+    text-decoration: none;  
+}
+
+.game {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.listed-game {
+    padding:8px;
+    margin: 20px 0 25px 0;
+}
+
+.hud-data {
+    background-color: #FF7F50; /* Teal background */
+    color: white;              /* White text for contrast */
+    padding: 20px;             /* Padding */
+    border-radius: 8px;       /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    font-size: 18px;
+    flex: 1 auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+}
+
+.order-list {
+    list-style-type: none;          /* Remove default list styling */
+    padding: 0;                     /* Remove padding */
+    margin: 0;                      /* Remove margin */
+    width: 200px;                   /* Fixed width for the list */
+}
+
+.order-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* background-color: #FFDD57;      Light yellow background */
+    color: #333;                    /* Dark text for readability */
+    padding: 10px 15px;             /* Padding for each item */
+    margin: 10px 0;                 /* Margin between items */
+    border-radius: 10px;            /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    transition: background-color 0.3s, transform 0.3s; /* Smooth transitions */
+    font-size: 1em;                /* Font size */
+    cursor: pointer;                /* Pointer cursor on hover */
+}
+
+.green {
+    background-color: #4CAF50;      /* Green background */
+    color: white;                   /* White text */
+}
+
+.yellow {
+    background-color: #FFDD57;      /* Light yellow background */
+}
+
+.red {
+    background-color: #F44336;      /* Red color for text */
+}
+
+.order-image {
+    width: 64px;
+}
+
+.order-item:hover {
+    background-color: #FFB84D;      /* Darker yellow on hover */
+    transform: translateY(-3px);    /* Slightly lift the item on hover */
+}
+
+.order-item:active {
+    transform: translateY(1px);      /* Press down effect on click */
+}
+
+.stats {
+    margin-top: auto;
+}
+
+.cool-button {
+    background-color: #FFA500; /* Orange background */
+    border: none;              /* No border */
+    color: white;              /* White text */
+    padding: 15px 32px;        /* Padding */
+    text-align: center;        /* Centered text */
+    text-decoration: none;      /* No underline */
+    display: inline-block;      /* Inline-block for sizing */
+    font-size: 16px;           /* Font size */
+    margin: 4px 2px;           /* Margin */
+    cursor: pointer;            /* Pointer cursor */
+    border-radius: 12px;        /* Rounded corners */
+    transition: background-color 0.3s, transform 0.3s; /* Smooth transition */
+    font-family: "Bubblegum Sans", sans-serif; /* Consistent font */
+}
+
+.cool-button:hover {
+    background-color: rgba(255, 165, 0, 0.8); /* Darker light orange background on hover */
+    color: #fff;                    /* Change text color to white */
+    border-color: #fff;             /* Change border color to white */
+    transform: translateY(-3px);    /* Slightly lift the item on hover */
+}
+
+.cool-link {
+    color: #FFA500;                /* Orange text color */
+    text-decoration: none;         /* Remove underline */
+    font-size: 16px;              /* Font size */
+    padding: 10px 15px;           /* Padding for clickable area */
+    border: 2px solid #FFA500;    /* Border matching the text color */
+    border-radius: 5px;           /* Rounded corners */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+}
+
+.cool-link:hover {
+    background-color: rgba(255, 165, 0, 0.8); /* Darker light orange background on hover */
+    color: #fff;                    /* Change text color to white */
+    border-color: #fff;             /* Change border color to white */
+}
+
+.cool-link:active {
+    transform: scale(0.95);        /* Shrink on click */
+}
+
+
+.copy-text-container {
+    margin-bottom: 8px !important;
+    display: flex;                 /* Use flexbox for side-by-side layout */
+    align-items: center;          /* Center items vertically */
+    gap: 4px;
+}
+
+.copy-text-label {
+    font-size: 1.2em;              /* Larger font size for visibility */
+    color: #FF7F50;                /* Coral color for the label */
+    margin-right: 10px;            /* Space between label and button */
+}
+
+.copy-text-btn {
+    background-color: #B2DFDB;     /* Lighter teal background */
+    color: #333;                   /* Darker text color for contrast */
+    padding: 10px 20px;            /* Adjust padding */
+    font-size: 1em;                /* Base font size */
+    border: none;                  /* No border */
+    border-radius: 5px;            /* Rounded corners */
+    cursor: pointer;    
+    font-family: monospace;            /* Pointer cursor */
+    transition: background-color 0.3s; /* Smooth transitions */
+}
+
+.copy-text-btn:hover {
+    background-color: #A0D2D6;     /* Slightly darker on hover */
+}
+
+
+/* General styles for game titles */
+.game-title {
+    font-family: "Bubblegum Sans", sans-serif; /* Consistent font */
+    font-size: 2em;                           /* Large font size */
+    text-align: center;                         /* Center text */
+    padding: 20px 0 0 0;                            /* Vertical padding */
+    position: relative;                         /* Position for underline */
+}
+
+.subtitle {
+    margin: .5em 0;
+}
+
+#player-color-img {
+    height:64px;
+    width:64px;
+    margin-bottom: .5rem;
+}
+
+/* Underline effect */
+.game-title::after {
+    content: "";
+    display: block;
+    width: 100%;                                 /* Full width */
+    height: 5px;                                 /* Height of underline */
+    margin-top: 10px;                            /* Space between title and underline */
+    background-color: currentColor;              /* Use the text color for the underline */
+    border-radius: 5px;    
+                          /* Rounded edges for the underline */
+}
+
+.public {
+    border: 4px solid #4CAF50;
+    border-radius: 12px;
+    padding: 1em;
+}
+
+/* Style for public game title */
+.public-game-title {
+    color: #4CAF50;           /* Green color for text */
+}
+
+
+/* Style for private game title */
+.private-game-title {
+    color: #F44336;                              /* Red color for text */
+}
+
+.private {
+    border: 4px solid #F44336;
+    border-radius: 12px;
+    padding: 1em;
+}
+
+.logo-container {
+    width: 100%; /* Full width of the container */
+    max-width: 600px; /* Set a max width to limit the logo's size (adjust as needed) */
+    margin: 20px auto; /* Center the logo container */
+}
+
+.logo {
+    width: 100%; /* Make the logo responsive to the container width */
+    height: auto; /* Maintain the aspect ratio */
+}
+
+.absolute {
+    position: absolute;
+    margin: 1em .5em 0 0;
+    top: 0;
+    right: 0;
+}
+
+.scrollable-list {
+    list-style-type: none; /* Removes bullet points */
+    max-height: 600px; /* Adjust the height as needed */
+    overflow-y: auto; /* Adds vertical scroll */
+    padding: 0; /* Removes default padding */
+    margin: 0; /* Removes default margin */
+}
+
+/* game grid styles*/
+#title {
+    margin: .5rem 0 .25rem 0;
+    font-size: 2em;
+    text-align: center;
+}
+
+#grid-container {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    gap: 0;
+}
+
+.grid-tile {
+    position: relative;
+    width: 64px;
+    height: 64px;
+}
+
+.grid-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.container {
+    height: 640px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+h3 {
+    color: var(--text-color);
+    margin: 0 0 8px 0;
+    font-size: 1.25em;
+}
+
+.overlay-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px black;
+    pointer-events: none;
+    /* Allows clicks to pass through to the image */
+    text-align: center;
+    font-size: 2em;
+}
+
+.action-buttons {
+    gap: 1em;
+    display: flex;    
+    align-self: flex-end;
+    margin: .5em;
+}
+
+#theme-toggle {
+    color: var(--accent-color);
+    cursor: pointer;
+    border: none;
+    padding: .5em 1em;
+    border-radius: 12px;
+    background-color: var(--accent-color);
+}
+
+
+/* Form */
+.form-item {
+    padding: 10px 0; /* Add padding between form items */
+}
+
+#num_players label,
+#layouts label {
+    display: block; /* Ensure each label is on a new line */
+    margin-bottom: 5px; /* Add margin between checkboxes */
+}
+
+
+.container-item {
+    width: 100%;
+    border: 4px solid #4CAF50;
+    border-radius: 12px;
+    padding: 1em;
+}
+
+
+.swipe-out {
+    animation: swipeOut 0.5s forwards;
+  }
+
+  @keyframes swipeOut {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+  }

@@ -1,0 +1,205 @@
+ACTION_SPACE_VALUE: &action_space 27
+OBS_SPACE_CHANNEL: &obs_channel 12
+N_AGENTS: &n_agnets 2
+ACTOR_EMBEDDING_DIM: &actor_embedding_dim 776
+CRITIC_EMBEDDING_DIM: &critic_embedding_dim 776
+CLUSTER_EMBEDDING_DIM: &cluster_embedding_dim 32
+N_CLUSTERS: &n_clusters 16
+
+# VAE Configuration
+VAE_CONFIG: &vae_config
+  vae_path: "/data/benji/strategy-adaptation/agent_characterization/burrito_mep/20250513_171908_ep_100/" #"/Users/benjili/Research/burrito_cooperation/agent_characterization/encoder_training/20250505_163557_ep_50/"
+  latent_dim: 8
+  window_length: 50
+  vae_horizon: 50
+  action_dim: 27
+  obs_shape: [10, 12, *obs_channel]
+  gaussians_path: "/data/benji/strategy-adaptation/agent_characterization/burrito_mep/20250513_171908_ep_100/16cl/kmeans/gaussians.pkl" #"/Users/benjili/Research/burrito_cooperation/agent_characterization/encoder_training/20250505_163557_ep_50/kmeans/gaussians.pkl"
+
+# Model configuration using cluster conditioning
+MODEL_CONFIG:
+  custom_model: ActionBiasedClusterConditionedActorCritic
+  custom_model_config:
+    model_type: custom_conv
+    input_conv_channels: *obs_channel
+    actor_output_size: *action_space
+    critic_share_layers: false
+    num_clusters: *n_clusters  # Pass number of clusters to model
+    conv_filters:
+      - - 16
+        - 3
+        - 1
+        - same
+        - "default"
+      - - "pool"
+        - 2
+        - 2
+        - valid
+        - Null
+      - - 32
+        - 2
+        - 1
+        - valid
+        - "default"
+      - - 64
+        - 2
+        - 1
+        - valid
+        - "default"
+    # Updated layer sizes to account for cluster embedding
+    actor_layer_sizes:
+      #- - 232 #808  # actor_embedding_dim (768) + order_list (8) + cluster_embedding (32)
+      - - 776
+        - 64
+      - - 64
+        - *action_space
+    critic_layer_sizes:
+      #- - 232 #808  # Same calculation as actor
+      - - 776
+        - 64
+      - - 64
+        - 1
+    action_masking: true
+
+# Environment configuration
+ENV_CONFIG:
+  restrict_capability: false
+  max_steps: 2400
+  n_agents: *n_agnets
+  action_level: high
+  layout: burrito
+  reward_shaping_factor: 0
+  annealing_reward_shaping: true
+  reward_shaping_horizon: 25000000
+  use_phi: false
+  obs_encoder: lossless
+  cluster_br: True
+  num_clusters: *n_clusters
+  observation_space:
+    type: Dict
+    spaces:
+      image:
+        type: Box
+        low: -65535
+        high: 65535
+        shape: [10, 12, *obs_channel]
+        dtype: int32
+      action_mask:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - *action_space
+        dtype: float32
+      action_stats:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - *action_space
+        dtype: float32
+      order_list:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - 8
+        dtype: int8
+      cluster_id:  # Add field for cluster_id 
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - *n_clusters
+        dtype: int8
+      prev_action:
+        type: Box
+        low: 0
+        high: 8
+        shape:
+          - *action_space
+        dtype: float32
+  action_space:
+    type: Discrete
+    n: *action_space
+  rew_shaping_params:
+    # Same reward shaping parameters as before
+    place_tortilla_on_plate: [0,0]
+    pickup_dish_from_sink: [1,1]
+    pickup_chopped_ingredient_from_chopboard: [0,0]
+    place_ingredient_on_grill: [1,1]
+    pickup_cooked_ingredient_from_grill: [1,1]
+    place_ingredient_on_pot: [1,1]
+    pickup_cooked_ingredient_from_pot: [1,1]
+    chop_ingredient: [1,1]
+    pickup_mushroom: [0,0]
+    pickup_meat: [0,0]
+    pickup_rice: [0,0]
+    pickup_tortilla: [0,0]
+    extinguish_fire: [0,0]
+    place_charcoal_on_trash: [0,0]
+    burn_ingredient: -0.01
+    wash_dish: [1,1]
+    food_assembly: [1,1]
+    serve_dish: [5,5]
+    wrong_dish_discount: 1
+    correct_dish_bonus: 1
+    random_dish_delivery: 0
+    multiplier_params: [[1,1], [4,2], [100,5]]
+
+# Base configuration
+BASE_CONFIG:
+  env: burrito
+  count_steps_by: env_steps
+  alg: "VAEBR"  # Changed from BR to VAEBR
+  n_clusters: *n_clusters  # Set number of clusters
+  sgd_minibatch_size: 768
+  num_sgd_iter: 4
+  train_batch_size: 38400
+  lr_schedule: [[0, 0.001], [8000000, 0.001], [16000000, 0.0001]]
+  lambda: 0.99
+  kl_coeff: 0.5
+  clip_rewards: false
+  clip_param: 0.2
+  vf_clip_param: 10
+  vf_loss_coeff: 0.5
+  entropy_coeff: 0.02
+  grad_clip: 1.0
+  gamma: 0.995
+  rollout_fragment_length: auto
+  batch_mode: truncate_episodes
+  num_workers: 8
+  num_envs_per_worker: 4
+  num_cpus_per_worker: 1
+  num_cpus_for_driver: 8
+  num_gpus: 1
+  num_gpus_per_worker: 0
+  framework: torch
+  use_gae: true
+  partner_sampling_method: priority
+  num_history: 10
+
+  
+  custom_eval: True
+
+  learning_rate: 0.2
+  alpha: 0.4
+  decay_factor: 1
+
+  evaluation_interval: 40
+  pretrained_model_dir: /data/shuyang/overcooked/src/burrito_rl/policy_params/hallway_mep_population
+  pretrained_model_paths:
+    - 33
+    - 27
+    - 3
+    - 22
+    - 8
+    - 20
+    - 31
+    - 28
+    - 14
+    - 17
+
+
+  # Include VAE configuration
+  <<: *vae_config

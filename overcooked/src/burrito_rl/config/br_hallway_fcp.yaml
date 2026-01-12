@@ -1,0 +1,200 @@
+ACTION_SPACE_VALUE: &action_space 27
+OBS_SPACE_CHANNEL: &obs_channel 12 #48
+N_AGENTS: &n_agnets 2
+ACTOR_EMBEDDING_DIM: &actor_embedding_dim 776
+CRITIC_EMBEDDING_DIM: &critic_embedding_dim 776 #776 (IPPO) or 776+n_acts * n_opponents=803 (MAPPO)
+MODEL_CONFIG:
+  custom_model: IPPO_model
+  custom_model_config:
+    model_type: custom_conv
+    input_conv_channels: *obs_channel
+    actor_output_size: *action_space
+    critic_share_layers: false
+    conv_filters:
+      - - 16
+        - 3
+        - 1
+        - same
+        - "default"
+      - - "pool"
+        - 2
+        - 2
+        - valid
+        - Null
+      - - 32
+        - 2
+        - 1
+        - valid
+        - "default"
+      - - 64
+        - 2
+        - 1
+        - valid
+        - "default"
+    actor_layer_sizes:
+      - - *actor_embedding_dim #150 #125
+        - 64
+      - - 64
+        - *action_space
+    critic_layer_sizes:
+      - - *critic_embedding_dim #150 #125
+        - 64
+      - - 64
+        - 1
+    action_masking: true
+ENV_CONFIG:
+  restrict_capability: false
+  max_steps: 2400
+  n_agents: *n_agnets
+  action_level: high # low
+  layout: burrito
+  reward_shaping_factor: 0 #0.4
+  annealing_reward_shaping: true
+  reward_shaping_horizon: 25000000
+  use_phi: false
+  obs_encoder: lossless
+  cluster_br: true
+  num_clusters: 1
+  observation_space:
+    type: Dict
+    spaces:
+      image:
+        type: Box
+        low: -65535
+        high: 65535
+        shape:
+           [10,12,*obs_channel] #142 #117
+        dtype: int32
+      action_mask:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - *action_space
+        dtype: float32
+      action_stats:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - *action_space
+        dtype: float32
+      order_list:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - 8
+        dtype: int8
+      cluster_id:  # Add field for cluster_id 
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - 1
+        dtype: int8
+      prev_action:
+        type: Box
+        low: 0
+        high: 8
+        shape:
+          - *action_space
+        dtype: float32
+  action_space:
+    type: Discrete
+    n: *action_space
+  rew_shaping_params:
+    place_tortilla_on_plate: [0,0]
+    pickup_dish_from_sink: [1,1]
+    pickup_chopped_ingredient_from_chopboard: [0,0]
+    place_ingredient_on_grill: [1,1]
+    pickup_cooked_ingredient_from_grill: [1,1]
+    place_ingredient_on_pot: [1,1]
+    pickup_cooked_ingredient_from_pot: [1,1]
+    chop_ingredient: [1,1]
+    pickup_mushroom: [0,0]
+    pickup_meat: [0,0]
+    pickup_rice: [0,0]
+    pickup_tortilla: [0,0]
+    extinguish_fire: [0,0]
+    place_charcoal_on_trash: [0,0]
+    burn_ingredient: -0.01
+    wash_dish: [1,1]
+    food_assembly: [1,1]
+    serve_dish: [5,5]
+    wrong_dish_discount: 1
+    correct_dish_bonus: 1
+    random_dish_delivery: 0
+    multiplier_params: [[1,1], [4,2], [100,5]] # [[1,1], [4,2], [100,5]]  # [[100,10]]   # [[1,1], [4,2], [100,5]]
+      # - - 0
+      #   - 1
+      # - - 1
+      #   - 10
+      # - - 2
+      #   - 20
+      # - - 3
+      #   - 30
+      # - - 100
+      #   - 40
+BASE_CONFIG:
+  env: burrito
+  count_steps_by: env_steps
+  alg: "BR"
+  n_population: 11
+  sgd_minibatch_size: 768 # sgd minibatch for each policy
+  num_sgd_iter: 4
+  train_batch_size: 38400
+  # lr: 0.001
+  lr_schedule: [[0, 0.001], [8000000, 0.001], [16000000, 0.0001]]
+  lambda: 0.99
+  kl_coeff: 0.5
+  clip_rewards: false
+  clip_param: 0.2
+  vf_clip_param: 10
+  vf_loss_coeff: 0.5
+  entropy_coeff: 0.02
+  gamma: 0.995
+  grad_clip: 1.0
+  grad_clip_by: global_norm
+  rollout_fragment_length: 1200
+  batch_mode: truncate_episodes
+  num_workers: 8
+  num_envs_per_worker: 4
+  num_cpus_per_worker: 1
+  num_cpus_for_driver: 8
+  num_gpus: 1
+  num_gpus_per_worker: 0
+  # evaluation_num_workers: 1
+  # evaluation_interval: null
+  # evaluation_duration: 1
+  # evaluation_duration_unit: episodes
+  # evaluation_parallel_to_training: true
+  # evaluation_config:
+  #   num_envs_per_worker: 5
+  framework: torch
+  use_gae: true
+  population_path: /data/shuyang/overcooked/src/burrito_rl/policy_params/hallway_fcp_population/
+  specific_partners: [1,2,25,26,29,30,32,4,5,6,7]
+  partner_sampling_method: priority # random or priority
+  num_history: 10
+
+  custom_eval: True
+
+  learning_rate: 0.2
+  alpha: 0.4
+  decay_factor: 1
+
+  evaluation_interval: 40
+  pretrained_model_dir: /data/shuyang/overcooked/src/burrito_rl/policy_params/hallway_bp_population/
+  pretrained_model_paths:
+    - 33
+    - 27
+    - 3
+    - 22
+    - 8
+    - 20
+    - 31
+    - 28
+    - 14
+    - 17
+ 

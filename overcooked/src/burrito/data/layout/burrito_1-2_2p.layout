@@ -1,0 +1,34 @@
+{
+    "grid":  """XXBBXDSSXX
+                X        X
+                X  1     W
+                X  RZMT  X
+                U     2  X
+                X        X
+                XXPPXXGGXX""",
+    "start_all_orders" : [
+        { "ingredients" : ["meat"]},
+        { "ingredients" : ["mushroom"]},
+        { "ingredients" : ["rice"]},
+        { "ingredients" : ["tortilla"]},
+    ],
+    "start_state": {
+        "num_plates": 0,
+        "max_plates": 4,
+        "objects": [{"position": [0,2], "name": "dirty_plate", "id": 1}, {"position": [0,3], "name": "dirty_plate", "id": 2}, {"position": [9,3], "name": "dirty_plate", "id": 3}, {"position": [9,4], "name": "dirty_plate", "id": 4}, {"position": [9,5], "name": "fire_ext", "id": 5}],
+        "players": [{"position": [3, 2], "orientation": [0, -1], "held_object": None}, {"position": [6, 4], "orientation": [0, -1], "held_object": None}],
+    },
+    "order_list": [('steak_burrito_dish', 1200, 1200), ('mushroom_burrito_dish', 1200, 1200)],
+    "all_recipes": [('steak_burrito_dish', 1200, 1200), ('mushroom_burrito_dish', 1200, 1200), ('mushroom_burrito_dish', 1200, 1200), ('mushroom_burrito_dish', 1200, 1200), ('steak_burrito_dish', 1200, 1200), ('steak_burrito_dish', 1200, 1200), ('mushroom_burrito_dish', 1200, 1200), ('steak_burrito_dish', 1200, 1200), ('mushroom_burrito_dish', 1200, 1200), ('steak_burrito_dish', 1200, 1200), ('mushroom_burrito_dish', 1200, 1200), ('steak_burrito_dish', 1200, 1200), ('mushroom_burrito_dish', 1200, 1200)],
+    "cook_time": 10,
+    "delivery_reward": 5,
+    "in_order_delivery_reward": 10,
+    "chicken_time": 40,
+    "steak_time": 80,
+    "rice_time": 80,
+    "chopped_steak_time": 80,
+    "mushroom_time": 80,
+    "warn_time": 60,
+    "warmup": 40,
+    "rew_shaping_params": None,
+}

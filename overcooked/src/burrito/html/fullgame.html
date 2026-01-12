@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game is full</title>
+</head>
+
+<body>
+    <h1>The game is full.</h1>
+    <div>Please join a different game or create a new one.</div>
+    <div>
+        <a href="/">Click here</a> 
+        <span>if not automatically redirected to the home page</span>
+    </div>
+    <script>
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 3000);
+    </script>
+</body>
+</html>

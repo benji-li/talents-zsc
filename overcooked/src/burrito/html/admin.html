@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="main">
+        <div class="action-buttons">
+            <button  class="cool-button"  onclick="window.location.href='/'">Exit</button>
+            <button id="theme-toggle" aria-label="Toggle Theme" class="cool-button">
+                <span id="icon-container">
+                    <div id="sun" style="display: none;"> <!-- Initially hidden -->
+                        <!-- Sun Icon SVG -->
+                        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="5" fill="#FFD700" />
+                            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M17.36 17.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M17.36 6.64l1.42-1.42" stroke="#FFA500" stroke-width="2" />
+                        </svg>
+                    </div>
+                    <div id="moon">
+                        <!-- Cool Moon Icon SVG -->
+                        <?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg height="24px" version="1.1" viewBox="0 0 512 512" width="24px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M248.082,263.932c-31.52-31.542-39.979-77.104-26.02-116.542c-15.25,5.395-29.668,13.833-41.854,26.02  c-43.751,43.75-43.751,114.667,0,158.395c43.729,43.73,114.625,43.752,158.374,0c12.229-12.186,20.646-26.604,26.021-41.854  C325.188,303.91,279.604,295.451,248.082,263.932z" fill="#FFD700"/></svg>
+                    </div>            
+                </span>
+            </button>    
+        </div>
+        <div class="container" style="gap:3em; width: calc(100% - 2em)">
+            <div class="container-item">
+                <h2>All Completed Games: {{ count }}</h2>
+                <h2>Active Games</h2>
+                <ul>
+                    {% for game_id, game in games.items() %}
+                        <li>
+                            {{ game_id }} - {{ game['status'] }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="container-item">
+                <h2>Game Settings</h2>
+                <div style="display: flex;">
+                    <div style="width: 100%"> 
+                        <h3>Current settings</h3>
+                        <ul>
+                            <li id="settings-agent-types">Player Types: {{ settings.agents }}</li>
+                            <li id="settings-players">Number of players: {{ settings.num_players }}</li>
+                            <li id="settings-layout">Layout: {{ settings.layout }}</li>
+                        
+                    </div>
+                    <div style="width: 100%;">
+                        <h3>Update settings</h3>
+                    <form action="{{ url_for('submit') }}" method="post" id="gameForm" onsubmit="return submitForm(event)">
+                    
+                        <div class="form-item">
+                            <label for="agents">Player 1:</label>
+                            <div id="player_1">
+                                {% for type in settings.agent_types %}
+                                <li>
+                                    <label><input type="checkbox" name="player_1" value="{{ type }}" onclick="onlyOne(this, 'player_1')"> {{ type }}</label>
+                                </li>
+                            {% endfor %}
+                            </div>
+                            <label for="agents">Player 2:</label>
+                            <div id="player_2">
+                                {% for type in settings.agent_types %}
+                                <li>
+                                    <label><input type="checkbox" name="player_2" value="{{ type }}" onclick="onlyOne(this, 'player_2')"> {{ type }}</label>
+                                </li>
+                            {% endfor %}
+                            </div>
+                            <label for="agents">Player 3:</label>
+                            <div id="player_3">
+                                {% for type in settings.agent_types %}
+                                <li>
+                                    <label><input type="checkbox" name="player_3" value="{{ type }}" onclick="onlyOne(this, 'player_3')"> {{ type }}</label>
+                                </li>
+                            {% endfor %}
+                            </div>
+                            <label for="agents">Player 4:</label>
+                            <div id="player_4">
+                                {% for type in settings.agent_types %}
+                                <li>
+                                    <label><input type="checkbox" name="player_4" value="{{ type }}" onclick="onlyOne(this, 'player_4')"> {{ type }}</label>
+                                </li>
+                            {% endfor %}
+                            </div>
+                            <label for="agents">Player 5:</label>
+                            <div id="player_5">
+                                {% for type in settings.agent_types %}
+                                <li>
+                                    <label><input type="checkbox" name="player_5" value="{{ type }}" onclick="onlyOne(this, 'player_5')"> {{ type }}</label>
+                                </li>
+                            {% endfor %}
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label for="layouts">Layouts:</label>
+                            <ul id="layouts">
+                                {% for layout in layouts %}
+                                    <li>
+                                        <label><input type="checkbox" name="layout" value="{{ layout }}" onclick="onlyOne(this, 'layout')"> {{ layout }}</label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="form-item">
+                            <label for="admin_pin">Admin PIN:</label>
+                            <input type="password" id="admin_pin" name="admin_pin" required>
+                        </div>
+                        <div class="form-item">
+                            <button type="submit" class="cool-button">Submit</button>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <script>
+        function onlyOne(checkbox, elementName) {
+            var checkboxes = document.getElementsByName(elementName);
+            checkboxes.forEach((item) => {
+                if (item !== checkbox) item.checked = false;
+            });
+        }
+        async function submitForm(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const form = document.getElementById('gameForm');
+            const formData = new FormData(form);
+
+            // // Validate form data
+            // const numPlayersChecked = Array.from(formData.getAll('num_players')).length > 0;
+            // const layoutChecked = Array.from(formData.getAll('layout')).length > 0;
+
+            // if (!numPlayersChecked || !layoutChecked) {
+            //     alert('Please ensure the form is completely filled out.');
+            //     return; // Prevent form submission
+            // }
+
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = JSON.parse(await response.text());
+                    console.log('Form submitted successfully:', result);
+                    showTemporaryMessage(result.message, true)
+                    updateSettings(result.settings);
+                } else {
+                    console.error('Form submission failed:', response.statusText);
+                    showTemporaryMessage(result.message, false);
+                }
+            } catch (error) {
+                console.error('Error submitting form:', false);
+                showTemporaryMessage("error submitting form");
+            }
+        }
+        function showTemporaryMessage(message, success) {
+            const messageContainer = document.createElement('div');
+            messageContainer.innerText = message;
+            messageContainer.style.backgroundColor =  success ? '#4CAF50' : '#F44336';
+            messageContainer.style.padding = '.5em';
+            messageContainer.style.borderRadius = '5px';
+            messageContainer.style.marginTop = '10px';
+            messageContainer.style.textAlign = 'center';
+
+            const form = document.getElementById('gameForm');
+            form.appendChild(messageContainer);
+
+            setTimeout(() => {
+                form.removeChild(messageContainer);
+            }, 3000); // Remove the message after 3 seconds
+        }
+        function updateSettings(settings) {
+            const numPlayers = document.getElementById('num_players');
+            const layouts = document.getElementById('layouts');
+
+            document.getElementById('settings-players').innerText = `Number of players: ${settings.num_players}`;
+            document.getElementById('settings-layout').innerText = `Layout: ${settings.layout}`;
+            console.log(settings.agents);
+            document.getElementById('settings-agent-types').innerText = `Player Types: ${settings.agents}`;
+
+            // Uncheck all checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+                checkbox.checked = false;
+            });
+        }
+    </script>
+    </script>
+    <script src="{{ url_for('static', filename='js/toggle.js') }}"></script>
+</body>
+</html>

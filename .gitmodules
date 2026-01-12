@@ -1,0 +1,3 @@
+[submodule "overcooked/overcooked_ai"]
+	path = overcooked/overcooked_ai
+	url = https://github.com/HumanCompatibleAI/overcooked_ai.git

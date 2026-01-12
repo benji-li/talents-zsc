@@ -1,0 +1,137 @@
+ACTION_SPACE_VALUE: &action_space 27
+OBS_SPACE_CHANNEL: &obs_space 48
+MODEL_CONFIG:
+  custom_model: IPPO_model
+  custom_model_config:
+    model_type: custom_conv
+    actor_layer_sizes:
+      - - 150 #125
+        - 64
+      - - 64
+        - *action_space
+    critic_layer_sizes:
+      - - 150 #125
+        - 64
+      - - 64
+        - 1
+    action_masking: true
+ENV_CONFIG:
+  restrict_capability: false
+  max_steps: 2400
+  n_agents: 3
+  action_level: high # low
+  layout: burrito_3p
+  reward_shaping_factor: 1
+  reward_shaping_horizon: 20000000
+  use_phi: false
+  obs_encoder: nopos
+  observation_space:
+    type: Dict
+    spaces:
+      image:
+        type: Box
+        low: -65535
+        high: 65535
+        shape:
+          - 142 #117
+        dtype: int32
+      action_mask:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - *action_space
+        dtype: float32
+      action_stats:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - *action_space
+        dtype: float32
+      order_list:
+        type: Box
+        low: 0
+        high: 1
+        shape:
+          - 8
+        dtype: int8
+      prev_action:
+        type: Box
+        low: 0
+        high: 8
+        shape:
+          - 27
+        dtype: float32
+  action_space:
+    type: Discrete
+    n: *action_space
+  rew_shaping_params:
+    place_tortilla_on_plate: [1,1,1]
+    pickup_dish_from_sink: [1,1,1]
+    pickup_chopped_ingredient_from_chopboard: [0,0,0]
+    place_ingredient_on_grill: [1,1,1] # [0, 0, -10,3]
+    pickup_cooked_ingredient_from_grill: [3,3,3] #[0, 0,-10,5]
+    place_ingredient_on_pot: [1,1,1] #[0, 0,3,-10]
+    pickup_cooked_ingredient_from_pot: [3,3,3] #[0,0,5,-10]
+    pickup_mushroom: [0,0,0] #[0,0,0,-10]
+    pickup_meat: [0,0,0] #[0,0,0,-10]
+    pickup_rice: [0,0,0] #[0,0,-10,0]
+    extinguish_fire: [1,1,1] #[0,0,1,1]
+    place_charcoal_on_trash: [0,0,0] #[0,0,1,1]
+    burn_ingredient: -0.01
+    wash_dish: [1,1,1] #[0,0,1,1]
+    food_assembly: [3,3,3] #[0,0,10,10]
+    serve_dish: [10,10,10] #[0,0,10,10]
+    wrong_dish_discount: 1
+    correct_dish_bonus: 1
+    random_dish_delivery: 0
+    multiplier_params: #[[1,1], [4,2], [100,5]] # [[1,1], [4,2], [100,5]]  # [[100,10]]   # [[1,1], [4,2], [100,5]]
+      - - 0
+        - 1
+      - - 1
+        - 10
+      - - 2
+        - 20
+      - - 3
+        - 30
+      - - 100
+        - 40
+BASE_CONFIG:
+  env: burrito
+  count_steps_by: env_steps
+  alg: PPO
+  sgd_minibatch_size: 768
+  num_sgd_iter: 4
+  train_batch_size: 38400
+  # lr: 0.001
+  lr_schedule: [[0, 0.001], [1200000, 0.001], [2500000, 0.0001]]
+  lambda: 0.99
+  kl_coeff: 0.5
+  clip_rewards: false
+  clip_param: 0.2
+  vf_clip_param: 10
+  vf_loss_coeff: 0.5
+  entropy_coeff: 0.02
+  gamma: 0.995
+  rollout_fragment_length: auto
+  batch_mode: truncate_episodes
+  num_workers: 8
+  num_envs_per_worker: 4
+  num_cpus_per_worker: 1
+  num_cpus_for_driver: 8
+  num_gpus: 1
+  num_gpus_per_worker: 0
+#  evaluation_num_workers: 1
+#  evaluation_interval: null
+#  evaluation_duration: 1
+#  evaluation_duration_unit: episodes
+#  evaluation_parallel_to_training: true
+#  evaluation_config:
+#    num_envs_per_worker: 5
+  framework: torch
+  use_gae: true
+  pretrained_model_path:
+    - /data/benji/strategy-adaptation/overcooked/src/burrito_rl/policy_params/burrito_3p-2/0000/checkpoint_001042/policies/pol1/policy_state.pkl
+    - /data/benji/strategy-adaptation/overcooked/src/burrito_rl/policy_params/burrito_3p-2/0000/checkpoint_001042/policies/pol2/policy_state.pkl
+    - /data/benji/strategy-adaptation/overcooked/src/burrito_rl/policy_params/burrito_3p-2/0000/checkpoint_001042/policies/pol3/policy_state.pkl

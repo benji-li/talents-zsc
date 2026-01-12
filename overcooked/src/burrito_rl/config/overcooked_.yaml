@@ -1,0 +1,70 @@
+MODEL_CONFIG:
+  custom_model: cc_model
+  custom_model_config:
+    input_conv_channels: 23
+    critic_share_layers: false
+    conv_filters:
+      - - 23
+        - 5
+        - 1
+        - same
+        - None
+      - - 23
+        - 3
+        - 1
+        - same
+        - None
+      - - 32
+        - 3
+        - 1
+        - valid
+        - None
+    actor_layer_sizes:
+      - - 384
+        - 64
+      - - 64
+        - 6
+    critic_layer_sizes:
+      - - 384
+        - 64
+      - - 64
+        - 1
+    action_masking: true
+ENV_CONFIG:
+  max_steps: 10
+  n_agents: 3
+  layout: ./overcooked/layouts/cramped_room_tomato.layout
+  reward_shaping_factor: 1
+  reward_shaping_horizon: 0
+  use_phi: false
+BASE_CONFIG:
+  env: overcooked
+  sgd_minibatch_size: 512
+  num_sgd_iter: 4
+  train_batch_size: 2048
+  lr: 0.001
+  lambda: 0.8
+  kl_coeff: 0.5
+  clip_rewards: false
+  clip_param: 0.2
+  vf_clip_param: 10
+  vf_loss_coeff: 0.5
+  entropy_coeff: 0.01
+  gamma: 0.99
+  rollout_fragment_length: auto
+  batch_mode: truncate_episodes
+  num_workers: 4
+  num_envs_per_worker: 4
+  num_cpus_per_worker: 1
+  num_cpus_for_driver: 2
+  num_gpus: 1
+  num_gpus_per_worker: 0
+  evaluation_num_workers: 1
+  evaluation_interval: 6
+  evaluation_duration: 8
+  evaluation_duration_unit: episodes
+  evaluation_parallel_to_training: true
+  evaluation_config:
+    num_envs_per_worker: 5
+  framework: torch
+  use_gae: true
